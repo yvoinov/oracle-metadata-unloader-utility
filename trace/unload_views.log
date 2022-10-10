@@ -1,0 +1,16 @@
+SQL> 
+SQL> execute utl_unld.views_tab_create;
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> rem Third parameter must be defined for unload views in FORCE mode.
+SQL> rem By default, views_unload procedure creates views in NOFORCE mode.
+SQL> rem Default value is set when third parameter is ommitted.
+SQL> 
+SQL> execute utl_unld.views_unload('&&unload_dir', '&&v_file_name', '&&force_mode');
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> spool off

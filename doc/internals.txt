@@ -1,0 +1,60 @@
+
+ UNLOADER INTERNAL NOTES
+ =======================
+
+ Important support notes, last minute additions and workarounds.
+ ---------------------------------------------------------------
+
+Note 1: On RDBMS 8.1.6.0.0 and 8.1.7.0.0 command "CREATE TABLE AS SELECT" 
+------- with lobs generate ORA-600 as shown below. 
+        
+        RDBMS version 8.1.6.0.0 must be upgraded with patchset 
+        at least 8.1.6.2.0 version!
+        RDBMS version 8.1.7.0.0 must be upgraded with patchset
+        at least 8.1.7.4.0 version!
+
+        Be  sure,  that  after upgrade RDBMS data dictionary common scripts
+        was  completed,  as  described  in  patchset documentation or RDBMS
+        Migration Guide.
+
+unload.sql script execution spool fragment
+------------------------------------------
+SQL> rem Create LOB table for views code. Need for correctly package 
+SQL> rem compilation.
+SQL> rem Can be re-created from package.
+SQL> 
+SQL> rem For more performance, uncomment keyword PARALLEL in next statement.
+SQL> rem It commented because can produce 
+SQL> rem ORA-00600: internal error code, arguments: [QerpxObjMd2]
+SQL> rem on some Oracle RDBMS (8.1.6.0.0, 8.1.7.0.0 for example)
+SQL> 
+SQL> CREATE TABLE tmp_views NOLOGGING PARALLEL AS
+  2  SELECT view_name, text_length,
+  3         TO_LOB(text) text
+  4  FROM user_views;
+FROM user_views
+     *
+ERROR at line 4:
+ORA-00600: internal error code, arguments: [QerpxObjMd2], [], [], [], [], [], 
+[], [] 
+
+This error produces by bug in PX IPC intercommunication.
+
+
+Note 2: Beware, that WRAPPED code different on 8.0, 8i, 9i, 10g RDBMS releases.
+------- Use correctly version from version-specific directory. Also be ware, 
+        that wrapped code from 8.x-9.x RDBMS can correctly executed on RDBMS 10.x.
+        But wrapped code from RDBMS 10.x CAN'T!
+
+
+Note 3: FOR WINDOWS NT/2000 USERS (IN DISTRIBUTED ENVIRONMENT) - If GLOBAL_NAMES 
+------- initialization parameter is TRUE or TNS-alias in tnsnames.ora in 
+        simplified form (without DB-domain) , CREATE SYNONYM command can be
+        unloaded with Windows domain name by default. 
+        Correct unloaded script manually, these synonyms cannot be created! 
+        It never ever taking place in UNIX platforms with disabled parameter 
+        GLOBAL_NAMES and full qualified TNS-aliases with default DB-domains. 
+        Anyway, check unloaded synonyms script for correctness BEFORE running.
+
+         Yuri Voinov (C) 2002-2005
+         -------------------------

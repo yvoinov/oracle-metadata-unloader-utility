@@ -1,0 +1,23 @@
+SQL> 
+SQL> rem Truncate temporary table first for speed up drop table command
+SQL> execute views_tab_trunc;
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> drop package utl_unld;
+
+Package dropped.
+
+SQL> 
+SQL> drop procedure views_tab_trunc;
+
+Procedure dropped.
+
+SQL> 
+SQL> drop table tmp_views;
+
+Table dropped.
+
+SQL> 
+SQL> spool off

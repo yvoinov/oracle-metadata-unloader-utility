@@ -1,0 +1,7 @@
+SQL> 
+SQL> execute utl_unld.grants_unload('&&unload_dir', '&&g_file_name');
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> spool off

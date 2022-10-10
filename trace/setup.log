@@ -1,0 +1,33 @@
+SQL> 
+SQL> rem Create temporary LOB table for views code.
+SQL> rem Need for correctly package compilation.
+SQL> rem Can be re-created from package.
+SQL> 
+SQL> rem For more performance, uncomment keyword PARALLEL in next statement.
+SQL> rem It commented because can produce
+SQL> rem ORA-00600: internal error code, arguments: [QerpxObjMd2]
+SQL> rem on some Oracle RDBMS (8.1.6.0.0, 8.1.7.0.0 for example)
+SQL> 
+SQL> 
+SQL> CREATE TABLE tmp_views NOLOGGING PARALLEL AS
+  2  SELECT /* PARALLEL &&par_degree */ view_name, text_length,
+  3  	    TO_LOB(text) text
+  4  FROM user_views;
+
+Table created.
+
+SQL> 
+SQL> set echo off
+
+Package created.
+
+No errors.
+Input truncated to 1 characters
+
+Package body created.
+
+No errors.
+
+Procedure created.
+
+No errors.

@@ -1,0 +1,183 @@
+rem --------------------------------------------------------------------------
+rem -- PROJECT_NAME: UTL_UNLD_prj                                           --
+rem -- RELEASE_VERSION: 1.0.0.6                                             --
+rem -- RELEASE_STATUS: Production                                           --
+rem --                                                                      --
+rem -- IDENTIFICATION: .\Unloader\UTL_UNLD\readme.1st                       --
+rem -- DESCRIPTION:  Readme file for UTL_UNLOADER package                   --
+rem --                                                                      --
+rem --                                                                      --
+rem -- INTERNAL_FILE_VERSION: 0.0.0.6                                       --
+rem --                                                                      --
+rem -- COPYRIGHT: Yuri Voinov (C) 2002-2005                                 --
+rem --                                                                      --
+rem -- MODIFICATIONS:                                                       --
+rem -- 31.01.2003 -Synonyms and grants notes added. Supported platforms and --
+rem --             RDBMS added.                                             --
+rem -- 30.01.2003 -PARALLEL EXECUTION notes added.                          --
+rem -- 02.02.2003 -Notes and limitations added.                             --
+rem -- 17.09.2002 -Initial written.                                         --
+rem --------------------------------------------------------------------------
+
+   UTL_UNLD Version 1.0.0.6
+   ========================
+
+   Utility   and   package  for  unloading  views, synonims,
+   grants  and  other objects  to  the  plain  text  file  -
+   sql-script  for  creation  under (i)SQL*Plus.
+
+   Note:  Output  text files is regular SQL-scripts and must
+   execute from (i)SQL*Plus.
+
+   Uses  OS  filesystem  for  output  plain  text file named
+   ObjectsFileName.                                Directory
+   ObjectsFilePath,  if  file  exists,  it'll be owerwritten
+   without  any   warnings.     ORACLE  owner user must have
+   permissions for write into specified directory.
+
+   Note:  Directory  path  is  OS specific! 
+          UTL_FILE_DIR = * parameter must be specified!
+
+   Usage:
+   ------                         
+   1. Prepare Oracle parameter file and restart instance                                   
+   2. Modify  if  need  and  run  unload.sh/bat/cmd script.
+      All required parameters can be set interactively.
+ 
+   All  logs will be moved to directory named "trace", which
+   must  be  created from  working  directory in lower case.
+   Note,  that  unloaded  objects  will be  in  SQL-scripts,
+   named   "synonyms.sql",  "views.sql"  etc.  without  main
+   starting   script.   You   must transfer it to the target
+   system and run as You need.
+
+   One-step usage:
+   For     one-step     unloading     open   shell   scripts
+   unload.sh/bat/cmd,   edit  environment   variables as You
+   need  for Your system, then run it. Scripts installs  all
+   needful  components  to  target  schema,  execute  unload
+   procedure  and  completely  remove all installed objects.
+   All operations are logged, please, check out log files to
+   errors.
+
+
+
+
+   Notes and limitations
+   =====================
+   
+
+   INSTANCE PARAMETERS
+   -------------------
+
+   BEWARE:    Package   uses   parallel   execution!   Check
+   instance  parameters  as   shown   in   example  init.ora
+   file.   Don't   use  this parameter file directly in Your
+   system! See PARALLEL ECXECUTION NOTES below!
+
+   
+   PARALLEL EXECUTION NOTES
+   ------------------------
+
+   Some   of  Oracle  RDBMS has very stupid bug with PARLLEL
+   EXECUTION.  This  bug   can   occur   with  big  parallel
+   operations,   such   as  CREATE TABLE AS  SELECT. On most
+   known  Oracle  platforms  it  occurs  ORA-00600: internal
+   error code, arguments: [QerpxObjMd2],[],[],[],[],[],[],[]
+   when temporary table for views code created.
+   On    more    old   Oracle   RDBMS  (such  as  8.0.5.0.0,
+   8.1.5.0.0)   this  bug  can  occur  database  hungs  with
+   dictionary inconsistancy.
+   Bug   is   known   and   fixed,  but  in  most  new RDBMS
+   versions (with initial releases) it repoduces again.
+   Bug  is produced wrong IPC coding with PARALLEL EXECUTION
+   (Prallel Query in past) and can workaround by two ways:
+   1.  Setup  last  patchset  on  Your  RDBMS.  This  is the
+   best   solution.  (Remember-fourth   digit   of   version
+   number   cannot  be  zero.  ;)  Anyway,  consult   Oracle
+   buglist  for  be sure, that it bug is corrected by target
+   patchset)
+   2.   Just  edit  Unloader's  setup.sql script and comment
+   PARALLEL   clause   in     "CREATE     TABLE   TMP_VIEWS"
+   command.   This   can  enable  correctly installation  of
+   Unloader  and  it's  functions and will be works all time
+   until   Your  delete  tmp_views  table  in  target schema
+   manually.  (DO NOT DO IT! If You drop this table, it will
+   be re-created by package in PARALLEL mode by default with
+   ORA-600  and  package  remains  in wrong state!) You  can
+   also   completely   disable   parallel  mode  in RDBMS by
+   disabling PARALLEL_MIN_SERVERS  and  PARALLEL_MAX_SERVERS
+   parameters  in  init.ora.  But this way cannot guarantee,
+   that bug will be completely fixed.
+   
+
+   SYNONYMS UNLOADING
+   ------------------
+
+   BEWARE:  Public  synonyms in current schema on objects in
+   another  schema  uses    database    links    cannot   be
+   detected   and,  following, unload in  this version.  All
+   of  these  synonyms  can  be  found  under SYS account by
+   name.  But   nevere   ever   be   unloaded,  either  from
+   SYS,  or  by  creator-owner.  Be  very  careful with this
+   synonyms!
+   Also,  in  any  cases,  possible  problems with unloading
+   synonyms  using database links. Consult internals.txt/pdf
+   file for details.
+
+  
+   GRANTS UNLOADING
+   ----------------
+
+   Both  table  grants  and column grants are unloads in one
+   script.  Script  contans   two  sections,  separated with
+   comments. Quantity checking runs separately  and  results
+   places   in the end of script only for existing groups of
+   grants.  Grants with grantable option unloaded with "WITH
+   GRANT OPTION"  clause.  Also,  combined grants (ie, GRANT
+   UPDATE,DELETE,INSERT   ON...)    unload    as   separated
+   commands   on  same object. It made result script  a  bit
+   more   and  slowly,  but  this  is  no matter for overall
+   performance   or  target  system  functionality  (or,  of
+   course, for database dictionary contents).
+
+   
+   SUPPORTED PLATFORMS AND RDBMS
+   -----------------------------
+
+   This   note   describes   both   components   -   generic
+   kernel  package and platform-specific calling scripts.
+
+   Unloader  package   was tested on both Windows NT/W2K and
+   UNIX  platforms  for   RDBMS 8.1.6 to 10.1.0. On UNIX any
+   vendor-specific   code  isn't  using.  Only  most  common
+   functionality for more compatibility used.
+
+   Package   kernel  produced as Portable Binary PL/SQL code
+   (PLB)  and  can be used  without  any limitations for any
+   RDBMS.  But You can remember, that PLB-format  cannot  be
+   backward   compatible   with   older  versions,  and,  of
+   course,   is   not compatible between grand releases (ie,
+   8.1 and 9.0, for example).
+
+   Also    beware  with  using  package  on  UNIX-platforms.
+   PLB-code   must  be transferring by using FTP protocol as
+   ASCII code, not as binary!
+
+   Generic  code  was  tested  on  most  common Oracle RDBMS
+   versions:  from  8.1.6.0.0   to   10.1.0.4.0  .  Usually,
+   some  initial  releases  of RDBMS has critical  bugs  and
+   (in   rare   cases)   cannot   correctly   working   with
+   Unloader.  In this cases, we recommens You install latest
+   (or  good  known)  patchset   on  RDBMS  for correct this
+   problem.  Anyway, this problems can occur relatively rare
+   and completely closed by Oracle patchsets.
+
+                     
+   ***************************************************************
+   *** For additional information, see internals.txt/pdf file. ***
+   ***************************************************************
+
+   Hard luck!
+
+   Yuri Voinov (C) 2002-2005
